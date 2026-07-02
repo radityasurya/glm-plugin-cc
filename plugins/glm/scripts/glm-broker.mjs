@@ -463,9 +463,8 @@ async function cmdEnv() {
 
 // ---------- entry ----------
 
-import { fileURLToPath } from "node:url";
-const isMain =
-  process.argv[1] && fileURLToPath(import.meta.url) === fileURLToPath(`file://${process.argv[1]}`);
+import { pathToFileURL } from "node:url";
+const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
 
 if (isMain) {
   const sub = process.argv[2];
