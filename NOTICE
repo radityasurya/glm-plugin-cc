@@ -2,7 +2,7 @@ glm-plugin-cc
 Copyright 2026 glm-plugin-cc contributors
 
 This product includes software developed as part of glm-plugin-cc
-(https://github.com/YOUR_GITHUB_USER/glm-plugin-cc).
+(https://github.com/radityasurya/glm-plugin-cc).
 
 This product is inspired by, and its plugin structure, command surface, and
 review-gate design are adapted from, OpenAI's `codex-plugin-cc`

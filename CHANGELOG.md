@@ -29,5 +29,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Phase 0 spike: headless `claude -p` against `https://api.z.ai/api/anthropic` handles chat, streaming, and tool use against GLM-5.2.
 - End-to-end: foreground review, background review + status/result/cancel, read-write rescue with autonomous file edits, transfer pipeline, gate hook no-op behavior.
 
-[Unreleased]: https://github.com/YOUR_GITHUB_USER/glm-plugin-cc/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/YOUR_GITHUB_USER/glm-plugin-cc/releases/tag/v0.1.0
+[Unreleased]: https://github.com/radityasurya/glm-plugin-cc/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/radityasurya/glm-plugin-cc/releases/tag/v0.1.0

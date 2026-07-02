@@ -50,10 +50,8 @@ Then run `/glm:setup` to confirm the key and `claude` binary are detected.
 
 ## Install
 
-> Replace `YOUR_GITHUB_USER/glm-plugin-cc` with your marketplace URL once published.
-
 ```text
-/plugin marketplace add YOUR_GITHUB_USER/glm-plugin-cc
+/plugin marketplace add radityasurya/glm-plugin-cc
 /plugin install glm@glm
 /reload-plugins
 /glm:setup
