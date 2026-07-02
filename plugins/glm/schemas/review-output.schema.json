@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GLM Review Output",
+  "type": "object",
+  "properties": {
+    "verdict": { "type": "string", "enum": ["approve", "request_changes", "block"] },
+    "summary": { "type": "string" },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "severity": { "type": "string", "enum": ["critical", "high", "medium", "low", "nit"] },
+          "category": { "type": "string", "enum": ["bug", "security", "performance", "design", "correctness", "maintainability", "other"] },
+          "file": { "type": "string" },
+          "line": { "type": ["string", "number"] },
+          "message": { "type": "string" },
+          "suggestion": { "type": "string" }
+        },
+        "required": ["severity", "category", "message"]
+      }
+    }
+  },
+  "required": ["verdict", "summary", "findings"]
+}

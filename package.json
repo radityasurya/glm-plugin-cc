@@ -1,0 +1,22 @@
+{
+  "name": "glm-plugin-cc",
+  "version": "0.1.0",
+  "description": "Use GLM-5.2 (z.ai) from inside Claude Code for code reviews or to delegate tasks.",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=18.18"
+  },
+  "bin": {
+    "glm-broker": "plugins/glm/scripts/glm-broker.mjs"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "setup": "node plugins/glm/scripts/glm-broker.mjs setup --check"
+  },
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "vitest": "^2.1.0"
+  }
+}

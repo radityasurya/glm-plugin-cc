@@ -1,0 +1,15 @@
+{
+  "name": "glm",
+  "owner": {
+    "name": "glm-plugin-cc"
+  },
+  "plugins": [
+    {
+      "name": "glm",
+      "source": "./plugins/glm",
+      "description": "Use GLM-5.2 (z.ai) from inside Claude Code for code reviews or to delegate tasks.",
+      "version": "0.1.0",
+      "keywords": ["glm", "z.ai", "review", "delegate", "claude-code"]
+    }
+  ]
+}
