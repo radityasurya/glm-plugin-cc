@@ -52,7 +52,7 @@ Then run `/glm:setup` to confirm the key and `claude` binary are detected.
 
 ```text
 /plugin marketplace add radityasurya/glm-plugin-cc
-/plugin install glm@glm
+/plugin install glm@radityasurya-glm
 /reload-plugins
 /glm:setup
 ```

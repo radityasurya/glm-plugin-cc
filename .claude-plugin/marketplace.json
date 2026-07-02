@@ -1,7 +1,7 @@
 {
-  "name": "glm",
+  "name": "radityasurya-glm",
   "owner": {
-    "name": "glm-plugin-cc"
+    "name": "radityasurya"
   },
   "plugins": [
     {
