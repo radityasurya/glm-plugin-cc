@@ -142,7 +142,7 @@ Use it when you want GLM to:
 - continue a previous GLM rescue task
 - take a cheaper/faster pass
 
-Supports `--background`, `--wait`, `--resume`, and `--fresh`. If you omit both `--resume` and `--fresh`, the broker continues the most recent finished rescue session for this repo.
+Supports `--background`, `--wait`, `--resume`, and `--fresh`. If you omit both `--resume` and `--fresh`, the broker continues the most recent finished rescue session for this repo, if it ran on the same model and finished in the last 6 hours. Otherwise it starts a fresh session.
 
 Examples:
 
@@ -156,7 +156,7 @@ Examples:
 Notes:
 
 - `/glm:rescue` runs GLM with full file/bash permissions. It will edit your repo. Run it on a clean working tree or a branch you don't mind touching.
-- Follow-up rescue requests continue the latest GLM rescue thread in the repo by default.
+- Follow-up rescue requests continue the latest GLM rescue thread in the repo by default. A session that z.ai no longer has is replaced by a fresh one instead of failing the job.
 
 ### `/glm:transfer`
 

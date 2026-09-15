@@ -113,4 +113,53 @@ describe("state", () => {
       join(tmpDir, "jobs", "xyz.stream.jsonl")
     );
   });
+
+  it("createJob records the cwd, and childPid starts empty", async () => {
+    const state = await loadState();
+    const job = state.createJob({ id: "job-cwd", kind: "rescue", prompt: "p", cwd: "/repo" });
+    expect(job.cwd).toBe("/repo");
+    expect(state.getJob("job-cwd").childPid).toBeNull();
+  });
+});
+
+describe("process tree", () => {
+  it("processTree follows every generation and skips unrelated or missing pids", async () => {
+    const state = await loadState();
+    const table = new Map([
+      [10, { ppid: 1 }],
+      [11, { ppid: 10 }],
+      [12, { ppid: 11 }],
+      [13, { ppid: 10 }],
+      [20, { ppid: 1 }],
+    ]);
+    expect(state.processTree(table, [10]).sort((a, b) => a - b)).toEqual([10, 11, 12, 13]);
+    expect(state.processTree(table, [99])).toEqual([]);
+  });
+
+  it("killTree also stops a descendant that runs in its own session", async () => {
+    const state = await loadState();
+    const { spawn } = await import("node:child_process");
+    // Same shape as claude -p: its Bash tool shells are session leaders, so killing
+    // the worker's process group would leave them running.
+    const parent = spawn(
+      process.execPath,
+      [
+        "-e",
+        [
+          'const { spawn } = require("node:child_process");',
+          'const g = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { detached: true, stdio: "ignore" });',
+          "console.log(g.pid);",
+          "setInterval(() => {}, 1000);",
+        ].join("\n"),
+      ],
+      { stdio: ["ignore", "pipe", "ignore"] }
+    );
+    const grandchild = await new Promise((resolve) =>
+      parent.stdout.once("data", (d) => resolve(Number(String(d).trim())))
+    );
+
+    expect(await state.killTree([parent.pid], { graceMs: 2000 })).toEqual([]);
+    const table = state.processTable();
+    expect(table.has(grandchild) && !table.get(grandchild).zombie).toBe(false);
+  });
 });

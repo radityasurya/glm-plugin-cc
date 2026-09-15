@@ -13,7 +13,7 @@ Raw slash-command arguments (the task text plus optional flags):
 Parse the flags from `$ARGUMENTS`:
 - `--wait` → foreground
 - `--background` → run as a Claude background task
-- `--resume` → continue the latest GLM rescue session (broker also auto-continues if neither `--resume` nor `--fresh` is given)
+- `--resume` → continue the latest GLM rescue session for this repo and model (broker also auto-continues if neither `--resume` nor `--fresh` is given)
 - `--fresh` → start a new session, do not continue
 - `--model <m>` → override the model (default glm-5.2)
 - Everything else is the task description.
@@ -42,4 +42,4 @@ Bash({
 ```
 Tell the user: "GLM rescue started in the background. Check `/glm:status`, then `/glm:result`. Use `/glm:rescue --resume` to continue the same thread."
 
-To continue a prior rescue: pass `--resume` (broker continues the most recent finished rescue session for this repo automatically when neither `--resume` nor `--fresh` is given).
+To continue a prior rescue: pass `--resume`. When neither `--resume` nor `--fresh` is given, the broker continues the most recent finished rescue session automatically, but only one from this repo, on the same model, that finished in the last 6 hours. If z.ai no longer has that session, the job starts a fresh one.

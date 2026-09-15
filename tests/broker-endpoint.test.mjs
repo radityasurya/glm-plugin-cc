@@ -132,3 +132,55 @@ describe("runClaude", () => {
     expect(res.result).toBe("ok");
   });
 });
+
+describe("pickResumable", () => {
+  const now = 1_800_000_000_000;
+  const recent = {
+    kind: "rescue",
+    status: "finished",
+    sessionId: "s-recent",
+    cwd: "/repo",
+    model: "glm-5.3",
+    finishedAt: now - 60_000,
+  };
+
+  it("continues the newest finished rescue session from the same repo and model", async () => {
+    const { pickResumable } = await import("../plugins/glm/scripts/glm-broker.mjs");
+    const jobs = [recent, { ...recent, sessionId: "s-older", finishedAt: now - 120_000 }];
+    expect(pickResumable(jobs, { cwd: "/repo", model: "glm-5.3", now })).toBe("s-recent");
+  });
+
+  it("skips sessions from another repo or model, too old, unfinished, or without a cwd", async () => {
+    const { pickResumable, RESUME_MAX_AGE_MS } = await import("../plugins/glm/scripts/glm-broker.mjs");
+    const jobs = [
+      { ...recent, cwd: "/other-repo" },
+      { ...recent, model: "glm-5.2" },
+      { ...recent, finishedAt: now - RESUME_MAX_AGE_MS - 1 },
+      { ...recent, status: "cancelled" },
+      { ...recent, cwd: undefined },
+    ];
+    expect(pickResumable(jobs, { cwd: "/repo", model: "glm-5.3", now })).toBeNull();
+  });
+
+  it("recognises the result event claude returns for an expired session", async () => {
+    const { isStaleSession } = await import("../plugins/glm/scripts/glm-broker.mjs");
+    // Shape of a real `claude -p --resume <gone-id>` result against z.ai.
+    const expired = {
+      type: "result",
+      subtype: "error_during_execution",
+      is_error: true,
+      num_turns: 0,
+      total_cost_usd: 0,
+      errors: ["No conversation found with session ID: cce88474-1573-4153-8fb8-37b690c02b7b"],
+    };
+    expect(isStaleSession(expired)).toBe(true);
+    expect(isStaleSession("claude exited 1: No conversation found with session ID: x")).toBe(true);
+    expect(isStaleSession({ ...expired, errors: ["rate limited"] })).toBe(false);
+  });
+
+  it("treats a job without a model as the default model", async () => {
+    const { pickResumable } = await import("../plugins/glm/scripts/glm-broker.mjs");
+    const jobs = [{ ...recent, model: null }];
+    expect(pickResumable(jobs, { cwd: "/repo", model: DEFAULT_MODEL, now })).toBe("s-recent");
+  });
+});

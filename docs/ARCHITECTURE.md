@@ -86,14 +86,24 @@ Claude finishes a turn → Stop hook fires
 
 Jobs live in `~/.glm-plugin/jobs/`:
 
-- `<id>.json` — job record: `{id, kind, pid, status, sessionId, model, prompt, createdAt, finishedAt, result, error, costUsd}`
+- `<id>.json` — job record: `{id, kind, pid, childPid, status, sessionId, model, cwd, prompt, createdAt, finishedAt, result, error, costUsd}`
 - `<id>.stream.jsonl` — raw stream-json events from the `claude -p` run
 
-The worker is **authoritative** for status transitions. `getJob` does not optimistically mark a job finished based on pid liveness (an earlier version did, and it raced the worker). `status` shows an advisory `(not responding)` line if a running job's pid is not alive, so crashed workers are visible without false positives.
+`pid` is the worker (or the foreground broker); `childPid` is the `claude -p` process it spawned. `cwd` is the repo the job ran in.
+
+The worker is **authoritative** for status transitions, with one exception: `cancel` sets `cancelled` before it stops the processes, and the worker never overwrites a `cancelled` status. `getJob` does not optimistically mark a job finished based on pid liveness (an earlier version did, and it raced the worker). `status` shows an advisory `(not responding)` line if a running job's pid is not alive, so crashed workers are visible without false positives.
+
+## Cancel model
+
+`claude -p` starts each Bash tool shell as its own session leader, so the shells, and the test runs or dev servers inside them, are not in the worker's process group. `cancel` therefore snapshots the process table with `ps`, collects every descendant of `pid` and `childPid` by parent pid, sends `SIGTERM`, and sends `SIGKILL` to anything still alive after 3 seconds. `childPid` is a separate root because a killed worker leaves its `claude` child re-parented to init. The worker also traps `SIGTERM`/`SIGINT` and stops its own child tree, so a plain `kill` of the worker does not orphan claude either.
+
+A process that daemonized before the cancel (re-parented to init) cannot be traced and is not stopped.
 
 ## Resume model
 
-`claude -p --resume <session-id>` continues a prior session by its UUID. The broker captures the session id from each run's stream result and stores it on the job. `/glm:rescue --resume <id>` passes it through. When neither `--resume` nor `--fresh` is given for a rescue, the broker auto-continues the most recent finished rescue session for the repo.
+`claude -p --resume <session-id>` continues a prior session by its UUID. The broker captures the session id from each run's stream result and stores it on the job. `/glm:rescue --resume <id>` passes it through.
+
+When neither `--resume` nor `--fresh` is given for a rescue, the broker auto-continues the newest finished rescue job that has the same `cwd`, the same model, and a `finishedAt` within the last 6 hours (`RESUME_MAX_AGE_MS`). Jobs recorded before `cwd` was stored never match. If `claude` reports `No conversation found with session ID` for the resumed id, the worker notes it in the stream and runs the prompt again as a fresh session.
 
 ## Auth resolution order
 

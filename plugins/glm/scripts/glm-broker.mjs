@@ -26,7 +26,15 @@ import {
   jobPath,
   jobStreamPath,
   isJobProcessAlive,
+  killTree,
 } from "./state.mjs";
+
+// Auto-resume only continues a session that finished within this window. z.ai expires
+// sessions; a resumed id it no longer knows is retried as a fresh session (runWorker).
+export const RESUME_MAX_AGE_MS = 6 * 60 * 60 * 1000;
+
+// How `claude -p --resume` reports a session id the backend no longer has.
+const STALE_SESSION = /No conversation found with session ID/i;
 
 // ---------- helpers ----------
 
@@ -61,7 +69,7 @@ function findClaude() {
 }
 
 // Run headless claude against z.ai. Returns { result, sessionId, costUsd, raw }.
-// onEvent(optional) called per parsed stream-json line.
+// onEvent(optional) called per parsed stream-json line; onSpawn(optional) gets the claude pid.
 export function runClaude({
   prompt,
   model = DEFAULT_MODEL,
@@ -69,6 +77,7 @@ export function runClaude({
   sessionId,
   readWrite = false,
   onEvent,
+  onSpawn,
   cwd,
 }) {
   const env = buildZaiEnv(model);
@@ -85,6 +94,7 @@ export function runClaude({
       cwd: cwd || process.cwd(),
       stdio: ["ignore", "pipe", "pipe"],
     });
+    if (onSpawn && proc.pid) onSpawn(proc.pid);
     let buf = "";
     let lastResult = null;
     const events = [];
@@ -139,9 +149,30 @@ export function runClaude({
   });
 }
 
+// A cancelled job stays cancelled: cmdCancel marks it before stopping the processes,
+// and the dying worker must not overwrite that with "failed".
+function finishJob(jobId, patch) {
+  if (getJob(jobId)?.status === "cancelled") return;
+  updateJob(jobId, { ...patch, finishedAt: Date.now() });
+}
+
+// True when a thrown message or a result event reports an unknown --resume id. claude
+// returns it as an error_during_execution result with the text in `errors`.
+export const isStaleSession = (x) => STALE_SESSION.test(typeof x === "string" ? x : JSON.stringify(x ?? ""));
+
 // Worker: runs a job inline (used by both --wait and detached background worker).
 async function runWorker(jobId, promptFile, opts) {
   const prompt = readFileSync(promptFile, "utf8");
+  let childPid = null;
+
+  // Killing the worker itself (Ctrl-C on --wait, or a plain `kill`) must not leave
+  // claude and the shells it started running on their own.
+  const stop = (code) => () => {
+    killTree([childPid], { graceMs: 2000 }).finally(() => process.exit(code));
+  };
+  process.once("SIGTERM", stop(143));
+  process.once("SIGINT", stop(130));
+
   const onEvent = (evt) => {
     try {
       appendStream(jobId, JSON.stringify(evt));
@@ -152,30 +183,49 @@ async function runWorker(jobId, promptFile, opts) {
       updateJob(jobId, { sessionId: evt.session_id });
     }
   };
-  try {
-    const res = await runClaude({
+  const onSpawn = (pid) => {
+    childPid = pid;
+    updateJob(jobId, { childPid: pid });
+  };
+  const run = (resume) =>
+    runClaude({
       prompt,
       model: opts.model,
-      resume: opts.resume,
+      resume,
       sessionId: opts.sessionId,
       readWrite: opts.readWrite,
       onEvent,
+      onSpawn,
       cwd: opts.cwd,
     });
-    updateJob(jobId, {
+
+  try {
+    let res = null;
+    try {
+      res = await run(opts.resume);
+    } catch (err) {
+      if (!opts.resume || !isStaleSession(err.message)) throw err;
+    }
+    if (opts.resume && (!res || (res.isError && isStaleSession(res.raw)))) {
+      appendStream(
+        jobId,
+        JSON.stringify({
+          type: "system",
+          subtype: "glm-broker",
+          message: `session ${opts.resume} no longer exists; starting a fresh session`,
+        })
+      );
+      res = await run(undefined);
+    }
+    finishJob(jobId, {
       status: res.isError ? "failed" : "finished",
       result: res.result,
       sessionId: res.sessionId,
       costUsd: res.costUsd,
-      finishedAt: Date.now(),
     });
     return res;
   } catch (err) {
-    updateJob(jobId, {
-      status: "failed",
-      error: err.message,
-      finishedAt: Date.now(),
-    });
+    finishJob(jobId, { status: "failed", error: err.message });
     throw err;
   }
 }
@@ -211,10 +261,13 @@ async function cmdRun(args) {
 
   const id = args.values["session-id"] || `glm-${Date.now().toString(36)}-${randomUUID().slice(0, 6)}`;
 
-  // Continue latest job for this repo unless --fresh or --resume given.
+  // Continue the latest session for this repo and model unless --fresh or an explicit id is given.
   let resumeId = resume;
   if (!resumeId && !fresh && kind === "rescue") {
-    resumeId = findLatestResumable();
+    resumeId = pickResumable(listJobs(50), { cwd: process.cwd(), model: model || DEFAULT_MODEL });
+    if (args.flags.resume && !resumeId) {
+      console.error("no recent GLM rescue session for this repo and model; starting a fresh one");
+    }
   }
 
   if (background) {
@@ -223,6 +276,7 @@ async function cmdRun(args) {
       kind,
       prompt: promptText.slice(0, 4000),
       model: model || DEFAULT_MODEL,
+      cwd: process.cwd(),
       sessionId: resumeId,
     });
     // spawn detached worker
@@ -256,6 +310,7 @@ async function cmdRun(args) {
     pid: process.pid,
     prompt: promptText.slice(0, 4000),
     model: model || DEFAULT_MODEL,
+    cwd: process.cwd(),
     sessionId: resumeId,
   });
   try {
@@ -277,11 +332,18 @@ function workerScript() {
   return process.argv[1];
 }
 
-function findLatestResumable() {
-  const jobs = listJobs(50);
-  const cwd = process.cwd();
+// The session auto-resume continues: the newest finished rescue job from the same
+// repo, on the same model, that finished within RESUME_MAX_AGE_MS. Jobs recorded
+// before `cwd` was stored never match. `jobs` is newest-first (listJobs order).
+export function pickResumable(jobs, { cwd, model, now = Date.now() }) {
   const match = jobs.find(
-    (j) => j.sessionId && (j.kind === "rescue") && j.status === "finished"
+    (j) =>
+      j.kind === "rescue" &&
+      j.status === "finished" &&
+      j.sessionId &&
+      j.cwd === cwd &&
+      (j.model || DEFAULT_MODEL) === model &&
+      now - (j.finishedAt ?? 0) <= RESUME_MAX_AGE_MS
   );
   return match ? match.sessionId : null;
 }
@@ -341,14 +403,19 @@ async function cmdCancel(args) {
     console.error("no job found");
     process.exit(1);
   }
-  if (job.status === "running" && job.pid) {
-    try {
-      process.kill(job.pid);
-    } catch {
-      /* already dead */
-    }
+  if (job.status !== "running") {
+    console.log(`${job.id} is not running (${job.status})`);
+    return;
   }
+  // Mark first, so the dying worker cannot record "failed" over it (finishJob).
   updateJob(job.id, { status: "cancelled", finishedAt: Date.now() });
+  // The worker, its claude child, and every shell and command claude started. The
+  // child is a root of its own: if the worker is already gone, it was re-parented.
+  const survivors = await killTree([job.pid, job.childPid]);
+  if (survivors.length) {
+    console.error(`cancelled ${job.id}, but these processes are still running: ${survivors.join(", ")}`);
+    process.exit(1);
+  }
   console.log(`cancelled ${job.id}`);
 }
 
