@@ -1,11 +1,11 @@
 ---
-description: Run a GLM-5.2 code review against local git state (read-only)
+description: Run a GLM-5.3 code review against local git state (read-only)
 argument-hint: '[--wait|--background] [--base <ref>]'
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Bash(node:*), Bash(git:*), Bash(mktemp:*), AskUserQuestion
 ---
 
-Run a GLM-5.2 review of the current work through the glm broker. Return GLM's output verbatim.
+Run a GLM-5.3 review of the current work through the glm broker. Return GLM's output verbatim.
 
 Raw slash-command arguments:
 `$ARGUMENTS`

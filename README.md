@@ -1,10 +1,10 @@
 # glm-plugin-cc
 
-> Use [GLM-5.2](https://z.ai/model-api) (z.ai) from inside [Claude Code](https://docs.claude.com/en/docs/claude-code/overview) for code reviews or to delegate tasks.
+> Use [GLM-5.3](https://z.ai/model-api) (z.ai) from inside [Claude Code](https://docs.claude.com/en/docs/claude-code/overview) for code reviews or to delegate tasks.
 
-This plugin is for Claude Code users who want an easy way to start using GLM-5.2 from the workflow they already have — without leaving Claude Code, and without pointing their primary Claude session away from Anthropic.
+This plugin is for Claude Code users who want an easy way to start using GLM-5.3 from the workflow they already have — without leaving Claude Code, and without pointing their primary Claude session away from Anthropic.
 
-`glm-plugin-cc` is **directly inspired by** [`openai/codex-plugin-cc`](https://github.com/openai/codex-plugin-cc), which lets Claude Code delegate to OpenAI Codex. This plugin does the same thing, but delegates to GLM-5.2 via z.ai's Anthropic-compatible endpoint. The command surface (`review`, `adversarial-review`, `rescue`, `transfer`, `status`, `result`, `cancel`, `setup`), the review-gate hook, and the plugin layout all mirror the original. See [Credit & inspiration](#credit--inspiration).
+`glm-plugin-cc` is **directly inspired by** [`openai/codex-plugin-cc`](https://github.com/openai/codex-plugin-cc), which lets Claude Code delegate to OpenAI Codex. This plugin does the same thing, but delegates to GLM-5.3 via z.ai's Anthropic-compatible endpoint. The command surface (`review`, `adversarial-review`, `rescue`, `transfer`, `status`, `result`, `cancel`, `setup`), the review-gate hook, and the plugin layout all mirror the original. See [Credit & inspiration](#credit--inspiration).
 
 ## What you get
 
@@ -75,8 +75,8 @@ A simple first run:
 |---|---|
 | `ANTHROPIC_BASE_URL` | `https://api.z.ai/api/anthropic` |
 | `ANTHROPIC_AUTH_TOKEN` | your z.ai key |
-| `ANTHROPIC_MODEL` | `glm-5.2` |
-| `ANTHROPIC_SMALL_FAST_MODEL` | `glm-5.2` (prevents a Claude-side haiku fallback) |
+| `ANTHROPIC_MODEL` | `glm-5.3` |
+| `ANTHROPIC_SMALL_FAST_MODEL` | `glm-5.3` (prevents a Claude-side haiku fallback) |
 | `ANTHROPIC_API_KEY` | cleared (so the auth token wins) |
 
 Because z.ai speaks the **Anthropic Messages** wire protocol, the headless `claude` loop — including tool use, file edits, and bash — works against GLM unchanged. Your primary Claude session keeps running against Anthropic; only the delegated subprocess talks to z.ai.
@@ -254,7 +254,7 @@ The plugin talks to GLM via the `claude` binary you already have, redirected to 
 
 1. `~/.glm-plugin/settings.json` (plugin-managed)
 2. z.ai key from `ZAI_API_KEY` / `ZA_API_KEY` env var or `~/.config/zai/api-key`
-3. `--model <id>` flag per command (default `glm-5.2`)
+3. `--model <id>` flag per command (default `glm-5.3`)
 
 ### Common configurations
 
@@ -268,7 +268,7 @@ Delegated tasks and any review-gate run can be resumed directly on GLM by passin
 
 | Setting | Default | Where |
 |---|---|---|
-| Model | `glm-5.2` | per-call `--model`, or `~/.glm-plugin/settings.json` |
+| Model | `glm-5.3` | per-call `--model`, or `~/.glm-plugin/settings.json` |
 | z.ai endpoint | `https://api.z.ai/api/anthropic` | hardcoded (Anthropic Messages protocol) |
 | Job state | `~/.glm-plugin/jobs/` | JSON per job + stream JSONL |
 | Settings | `~/.glm-plugin/settings.json` | review gate toggle, etc. |

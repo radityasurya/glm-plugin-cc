@@ -1,15 +1,15 @@
 ---
 name: glm-5-2-prompting
-description: Guidance for prompting GLM-5.2 effectively when delegating review, rescue, or adversarial-review work via the glm plugin. Use when constructing prompts sent to GLM through glm-broker.mjs.
+description: Guidance for prompting GLM-5.3 effectively when delegating review, rescue, or adversarial-review work via the glm plugin. Use when constructing prompts sent to GLM through glm-broker.mjs.
 ---
 
-# Prompting GLM-5.2 via the glm Plugin
+# Prompting GLM-5.3 via the glm Plugin
 
-Use this skill when constructing prompts that the `glm` plugin forwards to GLM-5.2 through `glm-broker.mjs`. GLM is reached via headless `claude -p` pointed at `https://api.z.ai/api/anthropic`, so it inherits Claude Code's tool-calling format (Anthropic Messages API). Prompts that work well with Claude's tool format generally work with GLM; the notes below cover GLM-5.2-specific behavior.
+Use this skill when constructing prompts that the `glm` plugin forwards to GLM-5.3 through `glm-broker.mjs`. GLM is reached via headless `claude -p` pointed at `https://api.z.ai/api/anthropic`, so it inherits Claude Code's tool-calling format (Anthropic Messages API). Prompts that work well with Claude's tool format generally work with GLM; the notes below cover GLM-5.3-specific behavior.
 
 ## Model Identity
 
-- **Model**: GLM-5.2, Z.ai's coding model.
+- **Model**: GLM-5.3, Z.ai's coding model.
 - **Endpoint**: `https://api.z.ai/api/anthropic` (Anthropic Messages compatible).
 - **Access path**: invoked through the headless `claude` subprocess, so tool calls are formatted as Anthropic `tool_use` blocks. GLM emits these correctly.
 - **Context window**: up to ~1M input tokens.
@@ -28,7 +28,7 @@ Use this skill when constructing prompts that the `glm` plugin forwards to GLM-5
 - **Prefer concrete over vague.** "Fix the off-by-one in the loop at `foo.rs:42`" beats "fix the bug." Include file paths and line numbers.
 - **GLM tends to be thorough.** If you want concise output, say so: "respond in under 200 words" or "list at most 5 findings."
 - **When asking for JSON**: show the exact schema and say "respond ONLY with JSON, no prose."
-- **Long context is fine.** GLM-5.2 handles large inputs well, so don't over-truncate diffs. But avoid dumping unrelated files — relevance still matters for quality.
+- **Long context is fine.** GLM-5.3 handles large inputs well, so don't over-truncate diffs. But avoid dumping unrelated files — relevance still matters for quality.
 
 ## Tool Use
 

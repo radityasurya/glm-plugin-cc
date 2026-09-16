@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Default model is `glm-5.3`. Every command, prompt, and doc that named `glm-5.2` now names `glm-5.3`.
+- `glm-rescue` subagent is `tools: Bash`, `model: sonnet`, and delegation-only, so it forwards to the broker and cannot do the work itself on the driver model.
+
 ## [0.1.1] - 2026-09-15
 
 ### Fixed

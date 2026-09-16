@@ -88,8 +88,8 @@ describe("config", () => {
     const env = buildZaiEnv();
     expect(env.ANTHROPIC_BASE_URL).toBe(ZAI_ANTHROPIC_BASE_URL);
     expect(env.ANTHROPIC_AUTH_TOKEN).toBe("my-key");
-    expect(env.ANTHROPIC_MODEL).toBe("glm-5.2");
-    expect(env.ANTHROPIC_SMALL_FAST_MODEL).toBe("glm-5.2");
+    expect(env.ANTHROPIC_MODEL).toBe("glm-5.3");
+    expect(env.ANTHROPIC_SMALL_FAST_MODEL).toBe("glm-5.3");
     expect(env.ANTHROPIC_API_KEY).toBe("");
   });
 
@@ -104,9 +104,9 @@ describe("config", () => {
     expect(() => buildZaiEnv()).toThrow(/API key/i);
   });
 
-  it("default model is glm-5.2", async () => {
+  it("default model is glm-5.3", async () => {
     const { DEFAULT_MODEL } = await import("../plugins/glm/scripts/config.mjs");
-    expect(DEFAULT_MODEL).toBe("glm-5.2");
+    expect(DEFAULT_MODEL).toBe("glm-5.3");
   });
 
   it("z.ai anthropic base url is correct", async () => {

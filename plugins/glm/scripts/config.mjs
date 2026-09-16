@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 export const ZAI_ANTHROPIC_BASE_URL = "https://api.z.ai/api/anthropic";
 export const ZAI_OPENAI_BASE_URL = "https://api.z.ai/api/coding/paas/v4";
-export const DEFAULT_MODEL = "glm-5.2";
+export const DEFAULT_MODEL = "glm-5.3";
 export const DEFAULT_EFFORT = "medium";
 
 export const PLUGIN_DIR = join(homedir(), ".glm-plugin");

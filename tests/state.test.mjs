@@ -32,7 +32,7 @@ describe("state", () => {
       id: "job-1",
       kind: "rescue",
       prompt: "fix the bug",
-      model: "glm-5.2",
+      model: "glm-5.3",
     });
     expect(job.id).toBe("job-1");
     expect(job.status).toBe("running");

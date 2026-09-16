@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// glm-broker.mjs — bridges Claude Code to GLM-5.2 via headless `claude -p` pointed at z.ai.
+// glm-broker.mjs — bridges Claude Code to GLM-5.3 via headless `claude -p` pointed at z.ai.
 import { spawn, spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { readFileSync, writeFileSync, existsSync, mkdirSync, rmSync } from "node:fs";
@@ -450,7 +450,7 @@ async function cmdTransfer(args) {
 
   const prompt =
     `The following is a transcript from a prior Claude Code session. ` +
-    `Continue this work using GLM-5.2. Pick up where it left off.\n\n${rendered}`;
+    `Continue this work using GLM-5.3. Pick up where it left off.\n\n${rendered}`;
   const promptPath = writeTempPrompt(prompt);
   const id = `glm-transfer-${Date.now().toString(36)}`;
   console.error(`Transfer prompt written (${turns.length} turns). Starting GLM session ${id}...`);

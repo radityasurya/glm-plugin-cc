@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { EventEmitter } from "node:events";
 
 const ZAI_ANTHROPIC_BASE_URL = "https://api.z.ai/api/anthropic";
-const DEFAULT_MODEL = "glm-5.2";
+const DEFAULT_MODEL = "glm-5.3";
 
 vi.mock("node:child_process", async (importOriginal) => {
   const actual = await importOriginal();
@@ -123,7 +123,7 @@ describe("runClaude", () => {
     expect(res.events.map((e) => e.type)).toEqual(["a", "result"]);
   });
 
-  it("uses the default model glm-5.2 when none given", async () => {
+  it("uses the default model glm-5.3 when none given", async () => {
     emittedLines = [
       JSON.stringify({ type: "result", result: "ok", session_id: "s", total_cost_usd: 0 }),
     ];

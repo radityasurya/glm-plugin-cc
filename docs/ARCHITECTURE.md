@@ -2,7 +2,7 @@
 
 ## Goal
 
-Delegate work from Claude Code (primary session on Anthropic) to GLM-5.2 (z.ai), without writing a custom agent runtime.
+Delegate work from Claude Code (primary session on Anthropic) to GLM-5.3 (z.ai), without writing a custom agent runtime.
 
 ## The key trick
 
@@ -11,8 +11,8 @@ z.ai exposes an **Anthropic-Messages-compatible** endpoint at `https://api.z.ai/
 ```
 ANTHROPIC_BASE_URL         = https://api.z.ai/api/anthropic
 ANTHROPIC_AUTH_TOKEN       = <z.ai key>
-ANTHROPIC_MODEL            = glm-5.2
-ANTHROPIC_SMALL_FAST_MODEL = glm-5.2
+ANTHROPIC_MODEL            = glm-5.3
+ANTHROPIC_SMALL_FAST_MODEL = glm-5.3
 ANTHROPIC_API_KEY          = ""   (cleared so the token wins)
 ```
 
@@ -126,7 +126,7 @@ All of that already exists inside `claude`. Reusing it cost ~150 LOC instead of 
 
 ## Verification (Phase 0 spike)
 
-Before building, we confirmed against live GLM-5.2:
+Before building, we confirmed against live GLM-5.3:
 
 - plain chat: ✅
 - `--output-format stream-json`: ✅

@@ -1,11 +1,11 @@
 ---
 name: adversarial-review
-description: Run a skeptical design review with GLM-5.2 that challenges the approach, tradeoffs, auth, and reliability of local changes. Append focus text to steer it.
+description: Run a skeptical design review with GLM-5.3 that challenges the approach, tradeoffs, auth, and reliability of local changes. Append focus text to steer it.
 ---
 
 # /glm:adversarial-review
 
-Delegates a skeptical, design-level review to GLM-5.2.
+Delegates a skeptical, design-level review to GLM-5.3.
 
 ## Usage
 
