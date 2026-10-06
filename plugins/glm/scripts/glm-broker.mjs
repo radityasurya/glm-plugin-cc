@@ -76,6 +76,7 @@ export function runClaude({
   resume,
   sessionId,
   readWrite = false,
+  bare = false,
   onEvent,
   onSpawn,
   cwd,
@@ -85,6 +86,9 @@ export function runClaude({
   if (resume) args.push("--resume", resume);
   // Note: do not pass --session-id for fresh runs; claude requires UUID format and
   // mints its own. We capture the generated id from the stream result instead.
+  // --bare skips hooks, plugins, MCP servers and CLAUDE.md: about 4 s to start instead
+  // of 20, and no Stop hook that could review this run. --tools "" leaves it no tools.
+  if (bare) args.push("--bare", "--tools", "");
   if (readWrite) args.push("--dangerously-skip-permissions");
   else args.push("--permission-mode", "plan");
 

@@ -83,7 +83,7 @@ ${lastAssistant.slice(0, 12000)}
 """`;
 
 try {
-  const res = await runClaude({ prompt, readWrite: false });
+  const res = await runClaude({ prompt, readWrite: false, bare: true });
   const match = res.result.match(/\{[\s\S]*\}/);
   if (match) {
     const parsed = JSON.parse(match[0]);
