@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- The Stop-hook review gate no longer reviews its own review. Each review runs a headless `claude`, which loaded the user's hooks too, so its Stop hook started another review: the chains ran up to 18 deep and held a turn for 40 s or more. Every `claude` the plugin starts now carries `GLM_REVIEW_GATE_ACTIVE=1`, and the gate exits at once when it sees it. Rescue jobs no longer run the gate on themselves either.
+
 ### Changed
 - Default model is `glm-5.3`. Every command, prompt, and doc that named `glm-5.2` now names `glm-5.3`.
 - `glm-rescue` subagent is `tools: Bash`, `model: sonnet`, and delegation-only, so it forwards to the broker and cannot do the work itself on the driver model.

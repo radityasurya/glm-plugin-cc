@@ -42,6 +42,9 @@ export function buildZaiEnv(model = DEFAULT_MODEL) {
     ANTHROPIC_MODEL: model,
     ANTHROPIC_SMALL_FAST_MODEL: model,
     ANTHROPIC_API_KEY: "",
+    // Every headless claude this plugin starts loads the user's hooks too. The marker
+    // stops the Stop-hook review gate from reviewing its own review, recursively.
+    GLM_REVIEW_GATE_ACTIVE: "1",
   };
 }
 

@@ -16,6 +16,12 @@ try {
   // ignore
 }
 
+// A claude started by this plugin (a review, a rescue job) never runs the gate itself.
+if (process.env.GLM_REVIEW_GATE_ACTIVE) {
+  process.stdout.write(JSON.stringify({}));
+  process.exit(0);
+}
+
 const settings = readSettings();
 if (!settings.reviewGate) {
   process.stdout.write(JSON.stringify({}));
