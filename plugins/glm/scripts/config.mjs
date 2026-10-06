@@ -35,8 +35,12 @@ export function buildZaiEnv(model = DEFAULT_MODEL) {
         "or create ~/.config/zai/api-key. Run: /glm:setup"
     );
   }
+  // A headless claude inherits the caller's HERDR_* variables, and herdr's own SessionStart
+  // hook then reports it as the Claude session of the caller's Pane, so the Pane points at a
+  // GLM job's transcript instead of the conversation running in it. Drop them.
+  const { HERDR_ENV, HERDR_PANE_ID, HERDR_SOCKET_PATH, ...inherited } = process.env;
   return {
-    ...process.env,
+    ...inherited,
     ANTHROPIC_BASE_URL: ZAI_ANTHROPIC_BASE_URL,
     ANTHROPIC_AUTH_TOKEN: key,
     ANTHROPIC_MODEL: model,

@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- A GLM job no longer takes over the caller's herdr Pane. The headless `claude` inherited `HERDR_ENV`, `HERDR_PANE_ID` and `HERDR_SOCKET_PATH`, so herdr's SessionStart hook reported the job's session as the Pane's Claude session, and tools that read a Pane's transcript (tautan's Chat view) showed the GLM job instead of the conversation in that Pane. `buildZaiEnv` drops those three variables.
 - The Stop-hook review gate no longer reviews its own review. Each review runs a headless `claude`, which loaded the user's hooks too, so its Stop hook started another review: the chains ran up to 18 deep and held a turn for 40 s or more. Every `claude` the plugin starts now carries `GLM_REVIEW_GATE_ACTIVE=1`, and the gate exits at once when it sees it. Rescue jobs no longer run the gate on themselves either.
 - The review gate runs its `claude` with `--bare --tools ""`: no hooks, plugins, MCP servers, `CLAUDE.md` or tools. A review starts in about 4 s instead of 20, finishes in about 15 s instead of 40 or more, and no longer opens shells to check the repo; it judges the reply text, as its prompt says. Rescue jobs keep the full setup.
 
